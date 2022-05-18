@@ -24,7 +24,7 @@ public class AlfredOutputFormatter implements OutputFormatter {
         if (translation.getGerman().isEmpty() || translation.getEnglish().isEmpty()) {
             out.append("<item valid=\"no\">");
             out.append("<title>").append(translation.getQuery()).append(" not found</title>");
-            out.append("<icon>de_en.png</icon>");   // TODO: configurierbar
+            // out.append("<icon>de_en.png</icon>");
             out.append("</item>");
         } else {
             var englishWords = translation.getEnglish();
@@ -35,7 +35,7 @@ public class AlfredOutputFormatter implements OutputFormatter {
                 out.append("<item valid=\"yes\" arg=\"").append(englishWords.get(i)).append("\">");
                 out.append("<title>").append(englishWords.get(i)).append("</title>");
                 out.append("<subtitle>").append(germanWords.get(i)).append("</subtitle>");
-                out.append("<icon>de_en.png</icon>");   // TODO: configurierbar
+                // out.append("<icon>de_en.png</icon>");
                 out.append("</item>");
             }
         }

@@ -3,7 +3,6 @@ package de.bender.dict.boundary;
 import de.bender.dict.control.OutputFormatter;
 import de.bender.dict.control.OutputFormatter.OutputFormat;
 import de.bender.dict.model.Translation;
-import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -11,13 +10,11 @@ import picocli.CommandLine.Parameters;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-import java.io.IOException;
 import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,6 +24,7 @@ import java.util.stream.Stream;
 
 import static java.net.http.HttpClient.Redirect.NORMAL;
 import static java.net.http.HttpClient.Version.HTTP_1_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * TODOs
@@ -45,6 +43,7 @@ public class DictCommand implements Callable<Integer> {
 
     private static final Integer EXIT_CODE_OK = 0;
     private static final Integer EXIT_CODE_EMPTY_BODY = 123;
+    private static final Integer EXIT_CODE_NO_INPUT = 120;
 
     private static final String EN_MARKER = "var c1Arr";
     private static final String DE_MARKER = "var c2Arr";
@@ -53,8 +52,8 @@ public class DictCommand implements Callable<Integer> {
     @Any
     Instance<OutputFormatter> outputFormatter;
 
-    @Parameters(index = "0", description = "Query term to be translated")
-    private String queryTerm;
+    @Parameters(description = "Query term to be translated")
+    private List<String> queryTerms;
 
     @Option(names = {"-o", "--output"}, defaultValue = "raw",
             required = true,
@@ -79,16 +78,19 @@ public class DictCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+        if (Objects.isNull(queryTerms)) { return EXIT_CODE_NO_INPUT; }
+
         // required in >= JDK8 to make basic-auth for proxies work
         System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
 
+        var queryTerm = String.join(" ", queryTerms);
         var request = HttpRequest
-                .newBuilder(URI.create("https://www.dict.cc/?s=" + queryTerm))
+                .newBuilder(URI.create("https://www.dict.cc/?s=" + URLEncoder.encode(queryTerm, UTF_8.toString())))
                 .header("User-agent", "Mozilla/6.0")
                 .build();
         var response = createHttpClient().send(request, BodyHandlers.ofString());
 
-        Translation translation = convert(response)
+        Translation translation = convert(queryTerm, response)
                 .orElseThrow(() -> new RuntimeException("Dict returned " + response.statusCode() + "!!!"));
 
         outputFormatter.stream()
@@ -99,7 +101,7 @@ public class DictCommand implements Callable<Integer> {
         return EXIT_CODE_OK;
     }
 
-    Optional<Translation> convert(HttpResponse<String> response) {
+    Optional<Translation> convert(String queryTerm, HttpResponse<String> response) {
         if (Objects.isNull(response.body())) {
             return Optional.empty();
         }
