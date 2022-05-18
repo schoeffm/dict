@@ -26,14 +26,6 @@ import static java.net.http.HttpClient.Redirect.NORMAL;
 import static java.net.http.HttpClient.Version.HTTP_1_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-/**
- * TODOs
- * - make proxy optional/configurable
- * - make XML-output possible and also configureble
- * - also implement a plain output mode
- * - refactoring into several classes
- */
-
 @Command(name = "dict", mixinStandardHelpOptions = true,
         description = "A little CLI helper to make calls to 'www.dict.cc' in order to have a " +
                 "quick translator - the CLI can also be used/integrated with Alfred launcher (see supported " +
@@ -157,7 +149,7 @@ public class DictCommand implements Callable<Integer> {
 
     List<String> processResults(String line) {
         var values = line.substring(line.indexOf('(') + 1, line.lastIndexOf(')'));
-        return Stream.of(values.split(","))                     // split the string up
+        return Stream.of(values.split("\",\""))                 // split the string up
                 .map(l -> l.replaceAll("\"", ""))   // remove the javascript "-marks
                 .filter(l -> !l.equals(""))                           // remove empty entries
                 .collect(Collectors.toList());
