@@ -1,6 +1,6 @@
 # dict
 
-A quarkus based CLI tool to do quick translation-lookups (en/de vs de/en) based on [www.dict.org](https://www.dict.org)
+A quarkus based CLI tool to do quick translation-lookups (en/de vs de/en) based on [www.dict.cc](https://www.dict.cc)
 
 ## Usage 
 ```bash
