@@ -27,10 +27,11 @@ import static java.net.http.HttpClient.Version.HTTP_1_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Command(name = "dict", mixinStandardHelpOptions = true,
-        description = "A little CLI helper to make calls to 'www.dict.cc' in order to have a " +
-                "quick translator - the CLI can also be used/integrated with Alfred launcher (see supported " +
-                "output-formats).\nThe CLI picks up HTTPS_PROXY settings and also supports proxy-authentication (via " +
-                "basic auth) - you can overwrite that default-behavior by explicitly setting proper proxy-options.")
+        version = "1.0.1",
+        description = """
+            A little CLI helper to make calls to 'dict.cc' in order to have a quick CLI translator - it can also be used/integrated with Alfred launcher (see supported output-formats).
+            The CLI picks up HTTPS_PROXY settings and also supports proxy-authentication (via basic auth) - you can overwrite that default-behavior by explicitly setting proper proxy-options.
+            You can use the tool by just passing in the phase/words you'd like to have translated (where it translates english <-> german by default). You can also specify the languages to be used for translation.""")
 public class DictCommand implements Callable<Integer> {
 
     private static final Integer EXIT_CODE_OK = 0;
@@ -75,9 +76,10 @@ public class DictCommand implements Callable<Integer> {
         // required in >= JDK8 to make basic-auth for proxies work
         System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
 
-        var queryTerm = String.join(" ", queryTerms);
+        var fromTo = determineLanguageCombination(queryTerms);      // extract the language instructions (if present)
+        var queryTerm = String.join(" ", queryTerms);      // now concatenate the words to form a phrase
         var request = HttpRequest
-                .newBuilder(URI.create("https://www.dict.cc/?s=" + URLEncoder.encode(queryTerm, UTF_8.toString())))
+                .newBuilder(URI.create("https://" + fromTo + ".dict.cc/?s=" + URLEncoder.encode(queryTerm, UTF_8.toString())))
                 .header("User-agent", "Mozilla/6.0")
                 .build();
         var response = createHttpClient().send(request, BodyHandlers.ofString());
@@ -91,6 +93,18 @@ public class DictCommand implements Callable<Integer> {
                 .forEach(System.out::println);
 
         return EXIT_CODE_OK;
+    }
+
+    private String determineLanguageCombination(List<String> queryTerms) {
+        var supportedLanguages = List.of("de", "en", "es", "fr", "it");
+        if (queryTerms.size() > 2 && supportedLanguages.contains(queryTerms.get(0)) && supportedLanguages.contains(queryTerms.get(1))) {
+            var result =  queryTerms.get(0) + queryTerms.get(1);
+            queryTerms.remove(0);
+            queryTerms.remove(0);
+            return result;
+        } else {
+            return "deen";                  // DE <> EN is the default
+        }
     }
 
     Optional<Translation> convert(String queryTerm, HttpResponse<String> response) {
