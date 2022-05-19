@@ -1,9 +1,11 @@
 package de.bender.dict.model;
 
-import java.util.List;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+import java.util.List;
 import static java.util.Collections.emptyList;
 
+@RegisterForReflection
 public class Translation {
 
     private final String query;
