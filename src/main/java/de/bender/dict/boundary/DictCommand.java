@@ -1,5 +1,6 @@
 package de.bender.dict.boundary;
 
+import de.bender.dict.control.Dict;
 import de.bender.dict.control.OutputFormatter;
 import de.bender.dict.control.OutputFormatter.OutputFormat;
 import de.bender.dict.model.Translation;
@@ -10,21 +11,11 @@ import picocli.CommandLine.Parameters;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-import java.net.*;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.net.http.HttpClient.Redirect.NORMAL;
-import static java.net.http.HttpClient.Version.HTTP_1_1;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Command(name = "dict", mixinStandardHelpOptions = true,
         version = "1.0.1",
@@ -37,9 +28,6 @@ public class DictCommand implements Callable<Integer> {
     private static final Integer EXIT_CODE_OK = 0;
     private static final Integer EXIT_CODE_EMPTY_BODY = 123;
     private static final Integer EXIT_CODE_NO_INPUT = 120;
-
-    private static final String EN_MARKER = "var c1Arr";
-    private static final String DE_MARKER = "var c2Arr";
 
     @Inject
     @Any
@@ -69,6 +57,12 @@ public class DictCommand implements Callable<Integer> {
             description = "The password to be used for proxy-authentication")
     private String proxyPassword;
 
+    /**
+     * The main {@code call}-method which gets executed whenever the CLI command is called
+     *
+     * @return an integer that represts the return code
+     * @throws Exception in case we stumble upon sth.
+     */
     @Override
     public Integer call() throws Exception {
         if (Objects.isNull(queryTerms)) { return EXIT_CODE_NO_INPUT; }
@@ -78,14 +72,17 @@ public class DictCommand implements Callable<Integer> {
 
         var fromTo = determineLanguageCombination(queryTerms);      // extract the language instructions (if present)
         var queryTerm = String.join(" ", queryTerms);      // now concatenate the words to form a phrase
-        var request = HttpRequest
-                .newBuilder(URI.create("https://" + fromTo + ".dict.cc/?s=" + URLEncoder.encode(queryTerm, UTF_8.toString())))
-                .header("User-agent", "Mozilla/6.0")
-                .build();
-        var response = createHttpClient().send(request, BodyHandlers.ofString());
 
-        Translation translation = convert(queryTerm, response)
-                .orElseThrow(() -> new RuntimeException("Dict returned " + response.statusCode() + "!!!"));
+        // create a Dict-instance and trigger the translation
+        Translation translation = Dict
+                .translate(queryTerm)
+                .from(fromTo.getKey())
+                .to(fromTo.getValue())
+                .withProxyHost(proxyHost)
+                .withProxyPort(proxyPort)
+                .withProxyUser(proxyUser)
+                .withProxyPass(Optional.ofNullable(proxyPassword).map(String::toCharArray).orElse(null))
+                .build();
 
         outputFormatter.stream()
                 .filter(f -> f.canHandle(outputFormat))
@@ -95,79 +92,20 @@ public class DictCommand implements Callable<Integer> {
         return EXIT_CODE_OK;
     }
 
-    private String determineLanguageCombination(List<String> queryTerms) {
+    /*
+     * depending on whether the user put in some dedicated source/destination language pairs we either return
+     * the default (which is de<>en) or we create a combination if the passed in parameters are supported.
+     */
+    private SimpleEntry<String, String> determineLanguageCombination(List<String> queryTerms) {
         var supportedLanguages = List.of("de", "en", "es", "fr", "it");
         if (queryTerms.size() > 2 && supportedLanguages.contains(queryTerms.get(0)) && supportedLanguages.contains(queryTerms.get(1))) {
-            var result =  queryTerms.get(0) + queryTerms.get(1);
+            var result = new SimpleEntry<>(queryTerms.get(0),  queryTerms.get(1));
             queryTerms.remove(0);
             queryTerms.remove(0);
             return result;
         } else {
-            return "deen";                  // DE <> EN is the default
+            return new SimpleEntry<>("de", "en");
         }
     }
-
-    Optional<Translation> convert(String queryTerm, HttpResponse<String> response) {
-        if (Objects.isNull(response.body())) {
-            return Optional.empty();
-        }
-        /*
-         * we basically parse the HTML-output which contains two JS-variable definitions that contain
-         * - c1Arr == the list of english words
-         * - c2Arr == the list of german words
-         */
-        Translation translation = new Translation(queryTerm);
-        response.body()
-                .lines()
-                .filter(l -> l.contains(EN_MARKER) || l.contains(DE_MARKER))
-                .forEach(l -> {
-                    if (l.contains(EN_MARKER)) {
-                        translation.setEnglish(processResults(l));
-                    } else {
-                        translation.setGerman(processResults(l));
-                    }
-                });
-        return Optional.of(translation);
-    }
-
-    HttpClient createHttpClient() {
-        var clientBuilder = HttpClient.newBuilder()
-                .followRedirects(NORMAL)
-                .version(HTTP_1_1);
-
-        if (Objects.nonNull(proxyHost) && Objects.nonNull(proxyPort)) {
-            clientBuilder.proxy(ProxySelector.of(new InetSocketAddress(proxyHost, proxyPort)));
-            if (Objects.nonNull(proxyUser) && Objects.nonNull(proxyPassword)) {
-                clientBuilder.authenticator(basicAuthAuthenticator(proxyUser, proxyPassword.toCharArray()));
-            }
-        } else if (Objects.nonNull(System.getenv("HTTPS_PROXY"))) {
-            URI proxyUri = URI.create(System.getenv("HTTPS_PROXY"));
-            clientBuilder.proxy(ProxySelector.of(new InetSocketAddress(proxyUri.getHost(), proxyUri.getPort())));
-            if (Objects.nonNull(proxyUri.getUserInfo())) {
-                var proxyAuth = proxyUri.getUserInfo().split(":");
-                clientBuilder.authenticator(basicAuthAuthenticator(proxyAuth[0], proxyAuth[1].toCharArray()));
-            }
-        }
-
-        return clientBuilder.build();
-    }
-
-    Authenticator basicAuthAuthenticator(String username, char[] password) {
-        return new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password);
-            }
-        };
-    }
-
-    List<String> processResults(String line) {
-        var values = line.substring(line.indexOf('(') + 1, line.lastIndexOf(')'));
-        return Stream.of(values.split("\",\""))                 // split the string up
-                .map(l -> l.replaceAll("\"", ""))   // remove the javascript "-marks
-                .filter(l -> !l.equals(""))                           // remove empty entries
-                .collect(Collectors.toList());
-    }
-
 
 }

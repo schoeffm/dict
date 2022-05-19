@@ -21,14 +21,14 @@ public class AlfredOutputFormatter implements OutputFormatter {
         StringBuilder out = new StringBuilder();
         out.append("<?xml version=\"1.0\"?>");
         out.append("<items>");
-        if (translation.getGerman().isEmpty() || translation.getEnglish().isEmpty()) {
+        if (translation.getSource().isEmpty() || translation.getDestination().isEmpty()) {
             out.append("<item valid=\"no\">");
             out.append("<title>").append(translation.getQuery()).append(" not found</title>");
             // out.append("<icon>de_en.png</icon>");
             out.append("</item>");
         } else {
-            var englishWords = translation.getEnglish();
-            var germanWords = translation.getGerman();
+            var englishWords = translation.getDestination();
+            var germanWords = translation.getSource();
             var max_iteration = Math.min(MAX_RESULTS,
                     Math.min(englishWords.size(), germanWords.size()));
             for (int i = 0; i < max_iteration; i++) {

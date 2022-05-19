@@ -23,11 +23,11 @@ public class StandardOutputFormatter implements OutputFormatter {
         out.append("Term: ").append(translation.getQuery()).append("\n");
         out.append("=".repeat(FULL_LINE)).append("\n");
 
-        if (translation.getGerman().isEmpty() || translation.getEnglish().isEmpty()) {
+        if (translation.getSource().isEmpty() || translation.getDestination().isEmpty()) {
             out.append("Not Found");
         } else {
-            var englishWords = translation.getEnglish();
-            var germanWords = translation.getGerman();
+            var englishWords = translation.getDestination();
+            var germanWords = translation.getSource();
             var max_iteration = Math.min(MAX_RESULTS,
                     Math.min(englishWords.size(), germanWords.size()));
 
