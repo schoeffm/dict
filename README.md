@@ -75,6 +75,15 @@ As already mentioned - this project makes use of Quarkus and PicoCLI to create a
 
 You can then execute your native executable with: `./target/dict-1.0.0-SNAPSHOT-runner` - it's recommended to rename or define an alias for the final result
 
+### Produce a Autocompletion-Script
+
+In order to generate a auto-complete script you could execute the followin' command:
+```bash
+$> cd target/quarkus-app
+$> java -cp $(ls lib/main | awk '{print "lib/main/" $1}' | tr "\n" ":")../dict-1.0.0-SNAPSHOT.jar picocli.AutoComplete de.bender.dict.boundary.DictCommand
+```
+I'd like to integrate that into the ordinary build-process (maven based).
+
 ### Related Guides
 
 - Picocli ([guide](https://quarkus.io/guides/picocli)): Develop command line applications with Picocli
