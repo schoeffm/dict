@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>de.bender.dict</string>
+	<key>category</key>
+	<string>Internet</string>
+	<key>connections</key>
+	<dict>
+		<key>3229E73F-003D-4CFF-80B1-0609CB6A690C</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>CCF9AC17-8E90-47B6-B9FB-C344E160ADF0</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>77DC6F16-F750-4C99-B55A-6897C2DF97AD</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>Stefan Schoeffmann</string>
+	<key>description</key>
+	<string>Quick Translation</string>
+	<key>disabled</key>
+	<true/>
+	<key>name</key>
+	<string>Dict (export)</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>autopaste</key>
+				<false/>
+				<key>clipboardtext</key>
+				<string></string>
+				<key>ignoredynamicplaceholders</key>
+				<false/>
+				<key>transient</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.clipboard</string>
+			<key>uid</key>
+			<string>CCF9AC17-8E90-47B6-B9FB-C344E160ADF0</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>escaping</key>
+				<integer>127</integer>
+				<key>keyword</key>
+				<string>de</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<false/>
+				<key>queuedelaymode</key>
+				<integer>1</integer>
+				<key>queuemode</key>
+				<integer>2</integer>
+				<key>runningsubtext</key>
+				<string>Please wait...</string>
+				<key>script</key>
+				<string>QUERY=$(iconv -f UTF8-MAC &lt;&lt;&lt;'{query}')
+./dict -o alfred $QUERY</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string></string>
+				<key>title</key>
+				<string>Translate EN/DE</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>3229E73F-003D-4CFF-80B1-0609CB6A690C</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<true/>
+				<key>removeextension</key>
+				<false/>
+				<key>text</key>
+				<string>Copied "{query}" to clipboard</string>
+				<key>title</key>
+				<string>Translate</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>77DC6F16-F750-4C99-B55A-6897C2DF97AD</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string>Disclaimer: There is already a dict-workflow out there for you to use. I just wanted to make my own (for educational purposes)
+
+This workflow uses a dict CLI tool to translate between languages (default is de&lt;&gt;en - but you can change that).
+
+The script works behind a proxy or without a proxy - you can hand over the required proxy-information via CLI-options (see help of the contained CLI tool) or via "Workflow Environment Variables" (just define a proper HTTPS_PROXY value)</string>
+	<key>uidata</key>
+	<dict>
+		<key>3229E73F-003D-4CFF-80B1-0609CB6A690C</key>
+		<dict>
+			<key>xpos</key>
+			<integer>115</integer>
+			<key>ypos</key>
+			<integer>75</integer>
+		</dict>
+		<key>77DC6F16-F750-4C99-B55A-6897C2DF97AD</key>
+		<dict>
+			<key>xpos</key>
+			<integer>700</integer>
+			<key>ypos</key>
+			<real>140</real>
+		</dict>
+		<key>CCF9AC17-8E90-47B6-B9FB-C344E160ADF0</key>
+		<dict>
+			<key>xpos</key>
+			<integer>700</integer>
+			<key>ypos</key>
+			<real>20</real>
+		</dict>
+	</dict>
+	<key>variablesdontexport</key>
+	<array/>
+	<key>version</key>
+	<string>1.0.0</string>
+	<key>webaddress</key>
+	<string>https://github.com/schoeffm/dict</string>
+</dict>
+</plist>

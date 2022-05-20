@@ -47,10 +47,10 @@ The initial reason for me to create that script was an [Alfred](https://www.alfr
 1. Checkout the repository and make sure you have all pre-requisites for compiling to native code
     1. GraalVM (tested with version `22.1.0.r17`)
     2. make sure you can compile to native images with that installation (i.e. `gu install native-image`)
-2. next compile the code to native image (i.e. `mvn package -Pnative`)
-3. in the `target` folder you should see now a `dict-1.0.0-SNAPSHOT-runner` binary
-    1. copy that binary to your `bin`-folder and either rename it or define an alias
-
+2. next compile the code to native image and generate the binaries using `./buildAll.sh`
+3. in the `target` folder you should see now a `dict` binary
+    1. move that binary to our `$PATH`
+       
 ## Developement
 
 As already mentioned - this project makes use of Quarkus and PicoCLI to create a native executable.
@@ -87,3 +87,12 @@ I'd like to integrate that into the ordinary build-process (maven based).
 ### Related Guides
 
 - Picocli ([guide](https://quarkus.io/guides/picocli)): Develop command line applications with Picocli
+
+## Alfred integration
+Although there is already a `dict`-workflow for Alfred I was eager to make my own experiences (for educational purposes mainly).
+
+I've initially provided a `workflow`-definition in this repo as well as an export (as described [in here][workflow-on-github] - out-of-the-box only for Intel-Macs).
+
+![](./docs/Alfred.gif)
+
+[workflow-on-github]:https://www.alfredapp.com/blog/guides-and-tutorials/share-workflow-on-github/

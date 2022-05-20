@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<workflow>
+  <name>dict.cc - Translate English to German</name>
+  <version>1.1</version>
+  <bundle>dict.cc</bundle>
+  <updated>1448068392</updated>
+  <file>alfred-dict.cc-workflow.alfredworkflow</file>
+</workflow>
