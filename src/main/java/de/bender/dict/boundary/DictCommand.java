@@ -4,6 +4,7 @@ import de.bender.dict.control.Dict;
 import de.bender.dict.control.OutputFormatter;
 import de.bender.dict.control.OutputFormatter.OutputFormat;
 import de.bender.dict.model.Translation;
+import io.quarkus.picocli.runtime.annotations.TopCommand;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -17,8 +18,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
+@TopCommand
 @Command(name = "dict", mixinStandardHelpOptions = true,
         version = "1.0.1",
+        subcommands = { Completion.class },
         description = """
             A little CLI helper to make calls to 'dict.cc' in order to have a quick CLI translator - it can also be used/integrated with Alfred launcher (see supported output-formats).
             The CLI picks up HTTPS_PROXY settings and also supports proxy-authentication (via basic auth) - you can overwrite that default-behavior by explicitly setting proper proxy-options.
